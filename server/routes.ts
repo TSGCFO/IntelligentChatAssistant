@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { insertConversationSchema, insertMessageSchema } from "@shared/schema";
 import Anthropic from '@anthropic-ai/sdk';
 
-// the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+// Using Claude Sonnet 4 model "claude-sonnet-4-20250514" which was released May 14, 2025
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY || "default_key",
 });
@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get AI response
       const anthropicResponse = await anthropic.messages.create({
-        model: 'claude-3-7-sonnet-20250219',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
         messages: anthropicMessages,
         system: `You are Claude, an AI assistant created by Anthropic. You have access to web search and domain-specific knowledge to help users with detailed conversations. Be helpful, accurate, and engaging in your responses.`,
@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: 'assistant',
         content: aiContent,
         metadata: {
-          model: 'claude-3-7-sonnet-20250219',
+          model: 'claude-sonnet-4-20250514',
           usage: anthropicResponse.usage,
         },
       });

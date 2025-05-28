@@ -108,8 +108,8 @@ Conversations (1) -> (N) Messages
 
 ### Claude API Configuration
 ```typescript
-// Using latest Claude 3.7 Sonnet model
-- Model: "claude-3-7-sonnet-20250219"
+// Using latest Claude Sonnet 4 model
+- Model: "claude-sonnet-4-20250514"
 - Max tokens: 4000
 - System prompt for chat behavior
 - Conversation history context

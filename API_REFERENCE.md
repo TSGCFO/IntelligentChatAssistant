@@ -327,7 +327,7 @@ You are Claude, an AI assistant created by Anthropic. You have access to web sea
 ```
 
 ### Model Configuration
-- **Model**: claude-3-7-sonnet-20250219 (latest available)
+- **Model**: claude-sonnet-4-20250514 (latest available)
 - **Max Tokens**: 4,000
 - **Context**: Full conversation history
 - **Temperature**: Default (not specified, using Claude's default)

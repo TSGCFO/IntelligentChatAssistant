@@ -5,7 +5,7 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 ## 🌟 Features
 
 ### Core Functionality
-- **AI-Powered Conversations**: Integration with Claude 3.7 Sonnet (latest model)
+- **AI-Powered Conversations**: Integration with Claude Sonnet 4 (latest model)
 - **User Authentication**: Secure username/password registration and login system
 - **Conversation Management**: Create, view, and delete chat conversations
 - **Real-time Messaging**: Instant message exchange with typing indicators
@@ -137,7 +137,7 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 ### ✅ Implemented
 - Complete user authentication system
 - Conversation management (create, view, delete)
-- Real-time AI chat with Claude 3.7 Sonnet
+- Real-time AI chat with Claude Sonnet 4
 - Responsive chat interface
 - Message history and persistence
 - Session management
