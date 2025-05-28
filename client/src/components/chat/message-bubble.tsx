@@ -9,7 +9,11 @@ interface MessageBubbleProps {
   isTyping?: boolean;
 }
 
-export default function MessageBubble({ message, isUser, isTyping }: MessageBubbleProps) {
+export default function MessageBubble({
+  message,
+  isUser,
+  isTyping,
+}: MessageBubbleProps) {
   const formatTime = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -22,25 +26,22 @@ export default function MessageBubble({ message, isUser, isTyping }: MessageBubb
     }
   };
 
-  const hasSearchMetadata = message.metadata && 
-    typeof message.metadata === 'object' && 
-    'webSearch' in message.metadata;
+  const hasSearchMetadata =
+    message.metadata &&
+    typeof message.metadata === "object" &&
+    "webSearch" in message.metadata;
 
   return (
-    <div className={cn(
-      "flex items-start space-x-3",
-      isUser ? "justify-end" : ""
-    )}>
+    <div
+      className={cn("flex items-start space-x-3", isUser ? "justify-end" : "")}
+    >
       {!isUser && (
         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
           <Bot className="w-4 h-4 text-primary-foreground" />
         </div>
       )}
 
-      <div className={cn(
-        "flex-1",
-        isUser ? "flex justify-end" : ""
-      )}>
+      <div className={cn("flex-1", isUser ? "flex justify-end" : "")}>
         {!isUser && hasSearchMetadata && (
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-3 max-w-3xl">
             <div className="flex items-center space-x-2 text-sm text-blue-700 dark:text-blue-300">
@@ -50,17 +51,25 @@ export default function MessageBubble({ message, isUser, isTyping }: MessageBubb
           </div>
         )}
 
-        <div className={cn(
-          "rounded-2xl p-4 max-w-3xl message-bubble",
-          isUser 
-            ? "bg-primary text-primary-foreground rounded-tr-md" 
-            : "bg-muted text-foreground rounded-tl-md"
-        )}>
+        <div
+          className={cn(
+            "rounded-2xl p-4 max-w-3xl message-bubble",
+            isUser
+              ? "bg-primary text-primary-foreground rounded-tr-md"
+              : "bg-muted text-foreground rounded-tl-md",
+          )}
+        >
           {isTyping ? (
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-              <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              <div
+                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                style={{ animationDelay: "0.1s" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                style={{ animationDelay: "0.2s" }}
+              ></div>
             </div>
           ) : (
             <div className="whitespace-pre-wrap">
@@ -70,10 +79,12 @@ export default function MessageBubble({ message, isUser, isTyping }: MessageBubb
         </div>
 
         {!isTyping && (
-          <div className={cn(
-            "flex items-center space-x-2 mt-2 text-xs text-muted-foreground",
-            isUser ? "justify-end mr-11" : ""
-          )}>
+          <div
+            className={cn(
+              "flex items-center space-x-2 mt-2 text-xs text-muted-foreground",
+              isUser ? "justify-end mr-11" : "",
+            )}
+          >
             <span>{formatTime(new Date(message.createdAt))}</span>
             <span>•</span>
             <span>{isUser ? "You" : "Claude"}</span>
