@@ -17,6 +17,7 @@ import {
   Search,
   Database,
   Settings,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
