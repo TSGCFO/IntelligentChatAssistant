@@ -1,15 +1,23 @@
 # AI Chat Application
 
-A sophisticated web-based AI chat application powered by Anthropic's Claude AI, featuring modern authentication, conversation management, and a ChatGPT-inspired interface.
+An advanced AI chat application powered by Anthropic Claude, featuring intelligent conversational capabilities, comprehensive API testing, and a robust file upload system.
 
 ## 🌟 Features
 
 ### Core Functionality
-- **AI-Powered Conversations**: Integration with Claude Sonnet 4 (latest model)
+- **AI-Powered Conversations**: Integration with Claude Sonnet 4 (claude-sonnet-4-20250514)
 - **User Authentication**: Secure username/password registration and login system
 - **Conversation Management**: Create, view, and delete chat conversations
+- **File Upload System**: Support for any file type using Claude Files API
 - **Real-time Messaging**: Instant message exchange with typing indicators
 - **Responsive Design**: Mobile-friendly interface with collapsible sidebar
+
+### Advanced Features
+- **Extended Thinking Display**: View Claude's reasoning process in expandable sections
+- **Copy to Clipboard**: One-click copying for code snippets and entire messages
+- **Voice Interaction Mode**: Speech recognition and text-to-speech capabilities (HTTPS required)
+- **Message Rendering**: Enhanced parsing for code blocks, markdown, and rich content
+- **Accessibility Features**: Screen reader support and keyboard navigation
 
 ### Interface Features
 - **Clean Chat Interface**: ChatGPT-inspired design with message bubbles
@@ -24,6 +32,7 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 - **Type Safety**: Full TypeScript implementation across frontend and backend
 - **Real-time Updates**: Automatic conversation list updates
 - **Error Handling**: Comprehensive error management with user-friendly messages
+- **Comprehensive Testing**: Full Jest test suite for all API endpoints
 
 ## 🏗️ Architecture
 
@@ -83,20 +92,49 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 
 ## 🔌 API Endpoints
 
-### Authentication
+### Authentication Endpoints
 - `POST /api/register` - Create new user account
+  - Body: `{ username: string, password: string }`
+  - Returns: User object with id, username, createdAt
 - `POST /api/login` - User login
+  - Body: `{ username: string, password: string }`
+  - Returns: User object and sets session cookie
 - `POST /api/logout` - User logout
+  - Clears session and returns success message
 - `GET /api/user` - Get current user information
+  - Returns: Current user object or 401 if not authenticated
 
-### Conversations
+### Conversation Management
 - `GET /api/conversations` - List user's conversations
+  - Returns: Array of conversations with id, title, timestamps
 - `POST /api/conversations` - Create new conversation
+  - Body: `{ title: string }`
+  - Returns: New conversation object
 - `DELETE /api/conversations/:id` - Delete conversation
+  - Requires: Conversation ownership validation
+  - Returns: Success confirmation
 
-### Messages
+### Message Handling
 - `GET /api/conversations/:id/messages` - Get conversation messages
+  - Returns: Array of messages with role, content, metadata, timestamps
 - `POST /api/conversations/:id/messages` - Send message and get AI response
+  - Body: `{ message: string, fileIds?: string[] }`
+  - Returns: User message and AI response with extended thinking support
+
+### File Upload System
+- `POST /api/upload` - Upload file for AI analysis
+  - Body: FormData with file
+  - Returns: `{ file_id: string, filename: string, size: number, type: string }`
+- `GET /api/files/:file_id` - Get file metadata
+  - Returns: File information and upload status
+- `DELETE /api/files/:file_id` - Delete uploaded file
+  - Returns: Deletion confirmation
+
+### Testing & Health Check
+- `GET /api/health` - Application health status
+  - Returns: System status and database connectivity
+- `GET /api/test` - API testing endpoint
+  - Returns: Test response for connectivity verification
 
 ## 🎨 Design System
 
@@ -135,23 +173,36 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 ## 🚀 Current Status
 
 ### ✅ Implemented
-- Complete user authentication system
-- Conversation management (create, view, delete)
-- Real-time AI chat with Claude Sonnet 4
-- Responsive chat interface
-- Message history and persistence
-- Session management
-- Error handling and loading states
-- TypeScript throughout the application
-- PostgreSQL database integration
+- Complete user authentication system with secure session management
+- Conversation management (create, view, delete) with ownership validation
+- Real-time AI chat with Claude Sonnet 4 (claude-sonnet-4-20250514)
+- File upload system supporting all file types via Claude Files API
+- Extended thinking display showing Claude's reasoning process
+- Copy to clipboard functionality for code snippets and messages
+- Voice interaction mode with speech recognition and text-to-speech
+- Enhanced message rendering with code syntax highlighting
+- Comprehensive Jest test suite covering all API endpoints
+- Responsive chat interface with accessibility features
+- Message history and persistence with metadata support
+- Error handling and loading states throughout the application
+- TypeScript implementation across frontend and backend
+- PostgreSQL database integration with Drizzle ORM
+
+### 🧪 Testing Coverage
+- **Authentication Tests**: Registration, login, logout, session validation
+- **Conversation Tests**: CRUD operations, ownership verification, error handling
+- **Message Tests**: Send/receive, AI integration, file attachment support
+- **File Upload Tests**: Upload validation, metadata retrieval, deletion
+- **Error Handling Tests**: Invalid inputs, unauthorized access, edge cases
+- **Integration Tests**: End-to-end API workflow validation
 
 ### 🔄 Ready for Enhancement
-- Web search functionality (UI ready)
-- Domain-specific knowledge integration (UI ready)
-- File upload and attachment handling
+- Web search functionality (UI components ready)
+- Domain-specific knowledge integration (interface prepared)
+- Real-time collaborative features
 - Message export functionality
 - Advanced AI tool integration
-- Real-time collaborative features
+- Multi-language support
 
 ## 📱 User Experience
 
@@ -189,5 +240,66 @@ A sophisticated web-based AI chat application powered by Anthropic's Claude AI, 
 - **Auto-resize Components**: Smooth textarea expansion
 - **Lazy Loading**: Components load as needed
 - **Memory Management**: Proper cleanup of event listeners
+
+## 🧪 Testing & Development
+
+### Running Tests
+```bash
+# Run all API tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test file
+npm test -- server/tests/api.test.ts
+
+# Run tests in watch mode
+npm test -- --watch
+```
+
+### Test Coverage
+The application includes comprehensive Jest testing covering:
+- **API Endpoints**: All authentication, conversation, and file upload endpoints
+- **Error Handling**: Invalid inputs, unauthorized access, edge cases
+- **Database Operations**: CRUD operations with proper validation
+- **File Upload**: Multipart form handling and file validation
+- **Session Management**: Authentication state and security
+
+### API Testing Script
+A standalone API testing script is available for manual verification:
+```bash
+# Test all endpoints manually
+node test-api.js
+```
+
+### Environment Setup
+Ensure these environment variables are set for testing:
+- `ANTHROPIC_API_KEY`: Required for AI integration tests
+- `DATABASE_URL`: PostgreSQL connection for test database
+- `SESSION_SECRET`: Session encryption key
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ and npm
+- PostgreSQL database
+- Anthropic API key
+
+### Quick Start
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables
+4. Run database migrations: `npm run db:push`
+5. Start development server: `npm run dev`
+6. Run tests: `npm test`
+
+### Production Deployment
+The application is ready for deployment with:
+- Secure session management
+- Environment-based configuration
+- Comprehensive error handling
+- Full test coverage
+- Type safety throughout
 
 This application provides a solid foundation for an AI chat platform with room for extensive feature expansion while maintaining clean architecture and excellent user experience.
