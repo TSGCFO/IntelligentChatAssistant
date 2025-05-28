@@ -20,6 +20,7 @@ import {
   Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import FileUpload from "./file-upload";
 
 interface ChatAreaProps {
   conversationId: number | null;
@@ -36,6 +37,7 @@ export default function ChatArea({
 }: ChatAreaProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);

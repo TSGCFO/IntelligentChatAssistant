@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileBuffer = await fs.readFile(req.file.path);
       
       // Upload to Claude Files API
-      const uploadResponse = await anthropic.files.upload({
+      const uploadResponse = await (anthropic as any).files.upload({
         file: toFile(fileBuffer, req.file.originalname, { type: req.file.mimetype }),
         purpose: 'user_data'
       });
