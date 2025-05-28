@@ -101,17 +101,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           content: m.content,
         }));
 
-      // Get AI response
-      const anthropicResponse = await anthropic.messages.create({
+      // Get AI response with extended thinking
+      const anthropicResponse = await anthropic.beta.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
         messages: anthropicMessages,
         system: `You are Claude, an AI assistant created by Anthropic. You have access to web search and domain-specific knowledge to help users with detailed conversations. Be helpful, accurate, and engaging in your responses.`,
+        thinking: {
+          type: "enabled",
+          budget_tokens: 10000
+        }
       });
 
       const aiContent = anthropicResponse.content[0].type === 'text' 
         ? anthropicResponse.content[0].text 
         : 'Sorry, I could not generate a response.';
+
+      // Extract thinking content if available
+      const thinkingContent = (anthropicResponse as any).thinking || null;
 
       // Save AI response
       const aiMessage = await storage.createMessage({
@@ -121,6 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           model: 'claude-sonnet-4-20250514',
           usage: anthropicResponse.usage,
+          thinking: thinkingContent,
         },
       });
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { parseMessageContent, renderParsedContent } from "@/lib/message-parser";
+import ThinkingDisplay from "./thinking-display";
 
 interface MessageBubbleProps {
   message: Message;
@@ -76,6 +77,10 @@ export default function MessageBubble({
               <span>Found relevant information from web search</span>
             </div>
           </div>
+        )}
+
+        {!isUser && message.metadata && typeof message.metadata === "object" && "thinking" in message.metadata && message.metadata.thinking && (
+          <ThinkingDisplay thinking={message.metadata.thinking as string} />
         )}
 
         <div className="relative group max-w-3xl">
