@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import type { Message } from "@shared/schema";
-import { Bot, User, Search } from "lucide-react";
+import { Bot, User, Search, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { parseMessageContent, renderParsedContent } from "@/lib/message-parser";
 
@@ -15,6 +18,29 @@ export default function MessageBubble({
   isUser,
   isTyping,
 }: MessageBubbleProps) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const copyMessageToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content || "");
+      setCopied(true);
+      toast({
+        title: "Message copied",
+        description: "Message content has been copied to clipboard",
+      });
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy message to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -52,34 +78,53 @@ export default function MessageBubble({
           </div>
         )}
 
-        <div
-          className={cn(
-            "rounded-2xl p-4 max-w-3xl message-bubble",
-            isUser
-              ? "bg-primary text-primary-foreground rounded-tr-md"
-              : "bg-muted text-foreground rounded-tl-md",
-          )}
-        >
-          {isTyping ? (
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-              <div
-                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                style={{ animationDelay: "0.1s" }}
-              ></div>
-              <div
-                className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              ></div>
-            </div>
-          ) : (
-            <div>
-              {message.content ? 
-                renderParsedContent(parseMessageContent(message.content)) : 
-                "No content available"
-              }
+        <div className="relative group max-w-3xl">
+          {!isTyping && (
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyMessageToClipboard}
+                className="h-8 w-8 p-0 bg-background/80 hover:bg-background border border-border"
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-600" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
             </div>
           )}
+
+          <div
+            className={cn(
+              "rounded-2xl p-4 message-bubble",
+              isUser
+                ? "bg-primary text-primary-foreground rounded-tr-md"
+                : "bg-muted text-foreground rounded-tl-md",
+            )}
+          >
+            {isTyping ? (
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                <div
+                  className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                  style={{ animationDelay: "0.1s" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
+                ></div>
+              </div>
+            ) : (
+              <div>
+                {message.content ? 
+                  renderParsedContent(parseMessageContent(message.content)) : 
+                  "No content available"
+                }
+              </div>
+            )}
+          </div>
         </div>
 
         {!isTyping && (
