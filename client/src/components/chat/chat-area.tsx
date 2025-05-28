@@ -70,12 +70,15 @@ export default function ChatArea({
     onMutate: () => {
       setIsTyping(true);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      if (conversationId) {
-        refetchMessages();
-      }
+      // Invalidate messages for any conversation since we might have created a new one
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/conversations"],
+        predicate: (query) => query.queryKey[2] === "messages"
+      });
+      refetchMessages();
     },
     onError: (error: Error) => {
       toast({
