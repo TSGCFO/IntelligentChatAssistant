@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileUpload from "./file-upload";
+import VoiceInterface from "./voice-interface";
 
 interface ChatAreaProps {
   conversationId: number | null;
@@ -38,6 +39,7 @@ export default function ChatArea({
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -113,6 +115,20 @@ export default function ChatArea({
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const handleVoiceMessage = (voiceText: string) => {
+    setMessage(voiceText);
+    // Auto-submit voice messages
+    sendMessageMutation.mutate({
+      conversationId: conversationId || undefined,
+      message: voiceText,
+    });
+  };
+
+  const handleReadMessage = (messageText: string) => {
+    // This will be handled by the voice interface component
+    console.log('Reading message:', messageText);
   };
 
   const autoResizeTextarea = () => {
@@ -212,6 +228,15 @@ export default function ChatArea({
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
+
+      {/* Voice Interface */}
+      <VoiceInterface
+        onVoiceMessage={handleVoiceMessage}
+        onReadMessage={handleReadMessage}
+        isVoiceMode={isVoiceMode}
+        onToggleVoiceMode={() => setIsVoiceMode(!isVoiceMode)}
+        disabled={sendMessageMutation.isPending}
+      />
 
       {/* Input Area */}
       <div className="p-4 border-t border-border bg-background">
