@@ -86,9 +86,14 @@ export default function FileUpload({
   const getFileIcon = (type: string) => {
     if (type.startsWith('image/')) return '🖼️';
     if (type === 'application/pdf') return '📄';
-    if (type.includes('text')) return '📝';
-    if (type.includes('spreadsheet') || type.includes('excel')) return '📊';
+    if (type.includes('text') || type.includes('plain')) return '📝';
+    if (type.includes('spreadsheet') || type.includes('excel') || type.includes('csv')) return '📊';
     if (type.includes('document') || type.includes('word')) return '📃';
+    if (type.includes('video/')) return '🎥';
+    if (type.includes('audio/')) return '🎵';
+    if (type.includes('zip') || type.includes('archive')) return '📦';
+    if (type.includes('json') || type.includes('xml')) return '⚙️';
+    if (type.includes('code') || type.includes('javascript') || type.includes('python')) return '💻';
     return '📁';
   };
 
@@ -102,7 +107,7 @@ export default function FileUpload({
           onChange={handleFileSelect}
           disabled={disabled || isUploading}
           className="hidden"
-          accept=".pdf,.txt,.csv,.json,.jpg,.jpeg,.png,.gif,.webp,.docx,.xlsx"
+          accept="*"
         />
         
         <Button
