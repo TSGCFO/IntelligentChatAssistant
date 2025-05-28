@@ -40,7 +40,11 @@ export function useSpeechRecognition({
     // Check if speech recognition is supported
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
-    if (SpeechRecognition) {
+    // Additional checks for better browser compatibility
+    const isSecureContext = window.isSecureContext || location.protocol === 'https:';
+    const hasPermission = navigator.permissions;
+    
+    if (SpeechRecognition && isSecureContext) {
       setIsSupported(true);
       recognitionRef.current = new SpeechRecognition();
       

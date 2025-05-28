@@ -253,14 +253,12 @@ export default function ChatArea({
                   className="min-h-[50px] max-h-32 pr-12 resize-none auto-resize"
                   rows={1}
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-3 bottom-3"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </Button>
+                <FileUpload
+                  onFileUploaded={(file) => setUploadedFiles([...uploadedFiles, file])}
+                  onFileRemoved={(fileId) => setUploadedFiles(uploadedFiles.filter(f => f.file_id !== fileId))}
+                  uploadedFiles={uploadedFiles}
+                  disabled={sendMessageMutation.isPending}
+                />
               </div>
 
               <Button
