@@ -41,7 +41,7 @@ export default function ChatArea({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
-    queryKey: ["/api/conversations", conversationId, "messages"],
+    queryKey: [`/api/conversations/${conversationId}/messages`],
     enabled: !!conversationId,
     staleTime: 0,
   });
@@ -78,6 +78,9 @@ export default function ChatArea({
       // Refresh conversation list
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       // Force refresh messages immediately
+      if (conversationId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
+      }
       refetchMessages();
     },
     onError: (error: Error) => {
