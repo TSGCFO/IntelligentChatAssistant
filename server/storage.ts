@@ -1,8 +1,12 @@
 import { users, conversations, messages, type User, type InsertUser, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db, pool } from "./db";
+import { eq } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,106 +22,87 @@ export interface IStorage {
   sessionStore: any;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private conversations: Map<number, Conversation>;
-  private messages: Map<number, Message>;
-  private currentUserId: number;
-  private currentConversationId: number;
-  private currentMessageId: number;
+export class DatabaseStorage implements IStorage {
   public sessionStore: any;
 
   constructor() {
-    this.users = new Map();
-    this.conversations = new Map();
-    this.messages = new Map();
-    this.currentUserId = 1;
-    this.currentConversationId = 1;
-    this.currentMessageId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      createdAt: new Date() 
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async getUserConversations(userId: number): Promise<Conversation[]> {
-    return Array.from(this.conversations.values())
-      .filter(conv => conv.userId === userId)
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.userId, userId))
+      .orderBy(conversations.updatedAt);
   }
 
   async getConversation(id: number): Promise<Conversation | undefined> {
-    return this.conversations.get(id);
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+    return conversation || undefined;
   }
 
   async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
-    const id = this.currentConversationId++;
-    const now = new Date();
-    const conversation: Conversation = {
-      ...insertConversation,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.conversations.set(id, conversation);
+    const [conversation] = await db
+      .insert(conversations)
+      .values(insertConversation)
+      .returning();
     return conversation;
   }
 
   async updateConversationTimestamp(id: number): Promise<void> {
-    const conversation = this.conversations.get(id);
-    if (conversation) {
-      conversation.updatedAt = new Date();
-      this.conversations.set(id, conversation);
-    }
+    await db
+      .update(conversations)
+      .set({ updatedAt: new Date() })
+      .where(eq(conversations.id, id));
   }
 
   async deleteConversation(id: number): Promise<void> {
-    this.conversations.delete(id);
-    // Also delete associated messages
-    const messagesToDelete = Array.from(this.messages.entries())
-      .filter(([_, message]) => message.conversationId === id)
-      .map(([messageId, _]) => messageId);
-    
-    messagesToDelete.forEach(messageId => this.messages.delete(messageId));
+    // Delete messages first
+    await db.delete(messages).where(eq(messages.conversationId, id));
+    // Then delete conversation
+    await db.delete(conversations).where(eq(conversations.id, id));
   }
 
   async getConversationMessages(conversationId: number): Promise<Message[]> {
-    return Array.from(this.messages.values())
-      .filter(message => message.conversationId === conversationId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const id = this.currentMessageId++;
-    const message: Message = {
-      ...insertMessage,
-      id,
-      createdAt: new Date(),
-      metadata: insertMessage.metadata || null,
-    };
-    this.messages.set(id, message);
+    const [message] = await db
+      .insert(messages)
+      .values(insertMessage)
+      .returning();
     return message;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
