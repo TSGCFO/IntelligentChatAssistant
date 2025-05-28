@@ -64,7 +64,7 @@ export default function MessageBubble({ message, isUser, isTyping }: MessageBubb
             </div>
           ) : (
             <div className="whitespace-pre-wrap">
-              {message.content}
+              {message.content || "No content available"}
             </div>
           )}
         </div>

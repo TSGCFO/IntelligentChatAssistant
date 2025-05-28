@@ -43,6 +43,8 @@ export default function ChatArea({
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", conversationId, "messages"],
     enabled: !!conversationId,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   const sendMessageMutation = useMutation({
@@ -57,6 +59,7 @@ export default function ChatArea({
         const newConversation = await conversationResponse.json();
         targetConversationId = newConversation.id;
         onConversationCreated(targetConversationId);
+        return { targetConversationId };
       }
 
       // Send the message
@@ -70,15 +73,14 @@ export default function ChatArea({
     onMutate: () => {
       setIsTyping(true);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      // Invalidate messages for any conversation since we might have created a new one
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/conversations"],
-        predicate: (query) => query.queryKey[2] === "messages"
+      // Invalidate and refetch conversations
+      await queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      // Invalidate and refetch current conversation messages
+      await queryClient.invalidateQueries({ 
+        queryKey: ["/api/conversations", conversationId, "messages"] 
       });
-      refetchMessages();
     },
     onError: (error: Error) => {
       toast({
