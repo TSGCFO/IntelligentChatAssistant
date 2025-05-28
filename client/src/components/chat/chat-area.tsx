@@ -43,8 +43,7 @@ export default function ChatArea({
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", conversationId, "messages"],
     enabled: !!conversationId,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
   });
 
   const sendMessageMutation = useMutation({
@@ -58,8 +57,9 @@ export default function ChatArea({
         });
         const newConversation = await conversationResponse.json();
         targetConversationId = newConversation.id;
-        onConversationCreated(targetConversationId);
-        return { targetConversationId };
+        if (targetConversationId) {
+          onConversationCreated(targetConversationId);
+        }
       }
 
       // Send the message
@@ -73,14 +73,12 @@ export default function ChatArea({
     onMutate: () => {
       setIsTyping(true);
     },
-    onSuccess: async (data) => {
+    onSuccess: () => {
       setMessage("");
-      // Invalidate and refetch conversations
-      await queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      // Invalidate and refetch current conversation messages
-      await queryClient.invalidateQueries({ 
-        queryKey: ["/api/conversations", conversationId, "messages"] 
-      });
+      // Refresh conversation list
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      // Force refresh messages immediately
+      refetchMessages();
     },
     onError: (error: Error) => {
       toast({
@@ -169,7 +167,7 @@ export default function ChatArea({
       {/* Messages */}
       <ScrollArea className="flex-1 p-4 chat-messages">
         <div className="max-w-4xl mx-auto space-y-6">
-          {messages.length === 0 && !conversationId && (
+          {(!messages || messages.length === 0) && !conversationId && (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bot className="w-8 h-8 text-primary" />
@@ -183,7 +181,7 @@ export default function ChatArea({
             </div>
           )}
 
-          {messages.map((msg) => (
+          {messages && messages.map((msg: Message) => (
             <MessageBubble
               key={msg.id}
               message={msg}
