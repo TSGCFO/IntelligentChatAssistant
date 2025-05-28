@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import type { Message } from "@shared/schema";
 import { Bot, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { parseMessageContent, renderParsedContent } from "@/lib/message-parser";
 
 interface MessageBubbleProps {
   message: Message;
@@ -72,8 +73,11 @@ export default function MessageBubble({
               ></div>
             </div>
           ) : (
-            <div className="whitespace-pre-wrap">
-              {message.content || "No content available"}
+            <div>
+              {message.content ? 
+                renderParsedContent(parseMessageContent(message.content)) : 
+                "No content available"
+              }
             </div>
           )}
         </div>
