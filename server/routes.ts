@@ -3,11 +3,43 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertConversationSchema, insertMessageSchema } from "@shared/schema";
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic, { toFile } from '@anthropic-ai/sdk';
+import multer from 'multer';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 // Using Claude Sonnet 4 model "claude-sonnet-4-20250514" which was released May 14, 2025
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY || "default_key",
+});
+
+// Configure multer for file uploads
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow common file types
+    const allowedTypes = [
+      'application/pdf',
+      'text/plain',
+      'text/csv',
+      'application/json',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not supported'));
+    }
+  }
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -157,6 +189,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteConversation(conversationId);
       res.sendStatus(204);
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Upload file to Claude Files API
+  app.post("/api/files/upload", upload.single('file'), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Read the uploaded file
+      const fileBuffer = await fs.readFile(req.file.path);
+      
+      // Upload to Claude Files API
+      const uploadResponse = await anthropic.files.upload({
+        file: toFile(fileBuffer, req.file.originalname, { type: req.file.mimetype }),
+        purpose: 'user_data'
+      });
+
+      // Clean up temporary file
+      await fs.unlink(req.file.path);
+
+      res.json({
+        file_id: uploadResponse.id,
+        filename: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype,
+        upload_date: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('File upload error:', error);
+      // Clean up temporary file on error
+      if (req.file?.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error cleaning up file:', unlinkError);
+        }
+      }
       res.status(500).json({ message: error.message });
     }
   });
